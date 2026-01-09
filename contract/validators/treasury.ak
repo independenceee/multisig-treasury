@@ -20,10 +20,24 @@ validator treasury(threshold: Int, allowance: Int) {
     transaction: Transaction,
   ) {
     expect Some(datum_input) = datum_option
-
     let Transaction { inputs, outputs, extra_signatories, .. } = transaction
+    expect Some(input) = find_input(inputs, output_reference)
+    let script_address = input.output.address
+    expect [output] =
+      list.filter(outputs, fn(output) { output.address == script_address })
+
     when redeemer is {
-      Deposit -> True
+      Deposit -> {
+        expect InlineDatum(datum_output_raw) = output.datum
+        expect datum_output: Datum = datum_output_raw
+
+        and {
+          datum_input.owners == datum_output.owners,
+          datum_input.signers == datum_output.signers,
+          datum_input.receiver == datum_output.receiver,
+          lovelace_of(output.value) >= lovelace_of(input.output.value),
+        }
+      }
       Execute -> True
       Signature -> {
         let signers =
@@ -49,12 +63,6 @@ validator treasury(threshold: Int, allowance: Int) {
               }
             },
           )
-
-        expect Some(input) = find_input(inputs, output_reference)
-        let script_address = input.output.address
-
-        expect [output] =
-          list.filter(outputs, fn(output) { output.address == script_address })
 
         expect InlineDatum(datum_output_raw) = output.datum
         expect datum_output: Datum = datum_output_raw
