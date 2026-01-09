@@ -16,7 +16,7 @@ import {
 import { blockfrostProvider } from "../providers/blockfrost.provider";
 import plutus from "../contract/plutus.json";
 import { Plutus } from "../types";
-import { title } from "../constants/common.constant";
+import { DECIMAL_PLACE, title } from "../constants/common.constant";
 import { APP_NETWORK_ID } from "../constants/enviroments.constant";
 
 /**
@@ -31,6 +31,7 @@ export class MeshAdapter {
     public policyId: string;
     public spendAddress: string;
     public threshold: number;
+    public allowance: number;
 
     protected mintCompileCode: string;
     protected mintScriptCbor: string;
@@ -54,9 +55,10 @@ export class MeshAdapter {
      *
      * @param {MeshWallet} meshWallet - Active Mesh wallet instance to connect.
      */
-    constructor({ meshWallet = null!, threshold = 1 }: { meshWallet: MeshWallet; threshold?: number }) {
+    constructor({ meshWallet = null!, threshold = 1, allowance = 10* DECIMAL_PLACE }: { meshWallet: MeshWallet; threshold?: number, allowance: number }) {
         this.meshWallet = meshWallet;
         this.threshold = threshold;
+        this.allowance = allowance
         this.fetcher = blockfrostProvider;
         this.meshTxBuilder = new MeshTxBuilder({
             fetcher: this.fetcher,
@@ -64,7 +66,7 @@ export class MeshAdapter {
         });
 
         this.mintCompileCode = this.readValidator(plutus as Plutus, title.mint);
-        this.mintScriptCbor = applyParamsToScript(this.mintCompileCode, [this.threshold]);
+        this.mintScriptCbor = applyParamsToScript(this.mintCompileCode, [this.threshold, this.allowance]);
         this.mintScript = {
             code: this.mintScriptCbor,
             version: "V3",
@@ -72,7 +74,7 @@ export class MeshAdapter {
         this.policyId = resolveScriptHash(this.mintScriptCbor, "V3");
 
         this.spendCompileCode = this.readValidator(plutus as Plutus, title.spend);
-        this.spendScriptCbor = applyParamsToScript(this.spendCompileCode, [this.threshold]);
+        this.spendScriptCbor = applyParamsToScript(this.spendCompileCode, [this.threshold, this.allowance]);
         this.spendScript = {
             code: this.spendScriptCbor,
             version: "V3",

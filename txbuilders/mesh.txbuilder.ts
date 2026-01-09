@@ -7,7 +7,6 @@ export class MeshTxBuilder extends MeshAdapter {
         quantity,
         receiver,
         name,
-        signers,
         owners,
     }: {
         name: string;
