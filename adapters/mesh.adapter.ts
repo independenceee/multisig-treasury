@@ -1,10 +1,12 @@
 import {
     applyParamsToScript,
     deserializeAddress,
+    deserializeDatum,
     IFetcher,
     MeshTxBuilder,
     MeshWallet,
     PlutusScript,
+    pubKeyAddress,
     resolveScriptHash,
     scriptAddress,
     serializeAddressObj,
@@ -51,7 +53,7 @@ export class MeshAdapter {
      *
      * @param {MeshWallet} meshWallet - Active Mesh wallet instance to connect.
      */
-    constructor({ meshWallet = null! }: { meshWallet: MeshWallet }) {
+    constructor({ meshWallet = null!, threshold = 1 }: { meshWallet: MeshWallet; threshold?: number }) {
         this.meshWallet = meshWallet;
         this.fetcher = blockfrostProvider;
         this.meshTxBuilder = new MeshTxBuilder({
@@ -60,15 +62,15 @@ export class MeshAdapter {
         });
 
         this.mintCompileCode = this.readValidator(plutus as Plutus, title.mint);
-        this. mintScriptCbor = applyParamsToScript(this.mintCompileCode,[])
+        this.mintScriptCbor = applyParamsToScript(this.mintCompileCode, [threshold]);
         this.mintScript = {
             code: this.mintScriptCbor,
-            version: "V3"
-        }
-        this.policyId =resolveScriptHash(this.mintScriptCbor, "V3")
+            version: "V3",
+        };
+        this.policyId = resolveScriptHash(this.mintScriptCbor, "V3");
 
         this.spendCompileCode = this.readValidator(plutus as Plutus, title.spend);
-        this.spendScriptCbor = applyParamsToScript(this.spendCompileCode, []);
+        this.spendScriptCbor = applyParamsToScript(this.spendCompileCode, [threshold]);
         this.spendScript = {
             code: this.spendScriptCbor,
             version: "V3",
@@ -197,5 +199,57 @@ export class MeshAdapter {
                 Number(amount[0].quantity) >= 5_000_000
             );
         })[0];
+    };
+
+    /**
+     * @description
+     * Retrieve wallet essentials for building a transaction:
+     * - Available UTxOs
+     * - A valid collateral UTxO (>= 5 ADA in lovelace)
+     * - Wallet's change address
+     *
+     * Flow:
+     * 1. Get all wallet UTxOs.
+     * 2. Ensure collateral exists (create one if missing).
+     * 3. Get wallet change address.
+     *
+     * @returns {Promise<{ utxos: UTxO[]; collateral: UTxO; walletAddress: string }>}
+     *          Object containing wallet UTxOs, a collateral UTxO, and change address.
+     *
+     * @throws {Error}
+     *         If UTxOs or wallet address cannot be retrieved.
+     */
+    protected convertDatum = ({
+        plutusData,
+    }: {
+        plutusData: string;
+    }): {
+        receiver: string;
+        owners: Array<string>;
+        signers: Array<string>;
+    } => {
+        try {
+            const datum = deserializeDatum(plutusData);
+            const receiver = serializeAddressObj(
+                pubKeyAddress(datum.fields[0].fields[0].bytes, datum.fields[0].fields[1].bytes, false),
+                APP_NETWORK_ID,
+            );
+
+            const owners = datum.fields[1].list.map((owner: any) =>
+                serializeAddressObj(pubKeyAddress(owner.fields[0].bytes, owner.fields[1].bytes, false), APP_NETWORK_ID),
+            );
+
+            const signers = datum.fields[2].list.map((owner: any) =>
+                serializeAddressObj(pubKeyAddress(owner.fields[0].bytes, owner.fields[1].bytes, false), APP_NETWORK_ID),
+            );
+
+            return {
+                receiver: receiver,
+                owners: owners,
+                signers: signers,
+            };
+        } catch (error) {
+            throw new Error(String(error));
+        }
     };
 }

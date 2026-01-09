@@ -1,28 +1,62 @@
 import { MeshAdapter } from "../adapters/mesh.adapter";
 import { APP_NETWORK } from "../constants/enviroments.constant";
-import { deserializeAddress, mConStr0 } from "@meshsdk/core";
+import { deserializeAddress, mConStr0, stringToHex } from "@meshsdk/core";
 
 export class MeshTxBuilder extends MeshAdapter {
     deposit = async ({
-        proposal,
         quantity,
+        receiver,
+        name,
+        signers,
+        owners,
     }: {
-        proposal: {
-            amount: number;
-            receiver: string;
-            signatures: string[];
-        };
+        name: string;
         quantity: string;
+        receiver?: string;
+        owners?: string[];
+        signers?: string[];
     }): Promise<string> => {
         const { utxos, walletAddress, collateral } = await this.getWalletForTx();
-        const utxo = null;
+        const utxo = await this.getAddressUTXOAsset(this.spendAddress, this.policyId + stringToHex(name));
 
+        const datum = this.convertDatum({ plutusData: utxo.output.plutusData as string });
         const unsignedTx = this.meshTxBuilder;
 
         if (utxo) {
+            unsignedTx
+                .spendingPlutusScript("V3")
+                .txIn(utxo.input.txHash, utxo.input.outputIndex)
+                .txInInlineDatumPresent()
+                .txInRedeemerValue(mConStr0([]))
+                .txInScript(this.spendScriptCbor)
+
+                .txOut(this.spendAddress, [
+                    { unit: this.policyId + stringToHex(name), quantity: "1" },
+                    {
+                        unit: "lovelace",
+                        quantity: String(
+                            utxo.output.amount.reduce((total, asset) => {
+                                if (asset.unit === "lovelace") {
+                                    return total + Number(asset.quantity);
+                                }
+                                return total;
+                            }, Number(quantity)),
+                        ),
+                    },
+                ])
+                .txOutInlineDatumValue(mConStr0([]));
         } else {
             unsignedTx
+                .mintPlutusScriptV3()
+                .mint("1", this.policyId, stringToHex(name))
+                .mintingScript(this.mintScriptCbor)
+                .mintRedeemerValue(mConStr0([]))
+
                 .txOut(this.spendAddress, [
+                    {
+                        unit: this.policyId + stringToHex(name),
+                        quantity: "1",
+                    },
                     {
                         unit: "lovelace",
                         quantity: quantity,
@@ -30,11 +64,9 @@ export class MeshTxBuilder extends MeshAdapter {
                 ])
                 .txOutInlineDatumValue(
                     mConStr0([
-                        BigInt(proposal.amount),
-                        mConStr0([deserializeAddress(proposal.receiver).pubKeyHash, deserializeAddress(proposal.receiver).stakeCredentialHash]),
-                        proposal.signatures.map((signature) =>
-                            mConStr0([deserializeAddress(signature).pubKeyHash, deserializeAddress(signature).stakeCredentialHash]),
-                        ),
+                        mConStr0([deserializeAddress(receiver!).pubKeyHash, deserializeAddress(receiver!).stakeCredentialHash]),
+                        owners!.map((owner) => mConStr0([deserializeAddress(owner).pubKeyHash, deserializeAddress(owner).stakeCredentialHash])),
+                        [],
                     ]),
                 );
         }
