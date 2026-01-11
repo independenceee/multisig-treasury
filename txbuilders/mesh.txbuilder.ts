@@ -1,6 +1,6 @@
 import { MeshAdapter } from "../adapters/mesh.adapter";
 import { APP_NETWORK } from "../constants/enviroments.constant";
-import { deserializeAddress, mTuple, mConStr0, mConStr1, mConStr2, stringToHex, list } from "@meshsdk/core";
+import { deserializeAddress, mConStr0, mConStr1, mConStr2, stringToHex } from "@meshsdk/core";
 
 export class MeshTxBuilder extends MeshAdapter {
     deposit = async ({

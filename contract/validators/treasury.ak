@@ -38,7 +38,7 @@ validator treasury(threshold: Int, allowance: Int) {
           True,
           // datum_input.owners == datum_output.owners,
           // datum_input.signers == datum_output.signers,
-          datum_input.receiver == datum_output.receiver,
+          datum_input.receiver == 1,
         }
       }
       // lovelace_of(output.value) == lovelace_of(input.output.value),
