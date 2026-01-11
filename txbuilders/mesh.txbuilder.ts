@@ -46,7 +46,8 @@ export class MeshTxBuilder extends MeshAdapter {
                 ])
                 .txOutInlineDatumValue(
                     mConStr0([
-                        mConStr0([deserializeAddress(datum.receiver!).pubKeyHash, deserializeAddress(datum.receiver!).stakeCredentialHash]),
+                        1,
+                        // mConStr0([deserializeAddress(datum.receiver!).pubKeyHash, deserializeAddress(datum.receiver!).stakeCredentialHash]),
                         datum.owners!.map((owner) => mConStr0([deserializeAddress(owner).pubKeyHash, deserializeAddress(owner).stakeCredentialHash])),
                         datum.signers!.map((signer) =>
                             mConStr0([deserializeAddress(signer).pubKeyHash, deserializeAddress(signer).stakeCredentialHash]),
@@ -72,7 +73,8 @@ export class MeshTxBuilder extends MeshAdapter {
                 ])
                 .txOutInlineDatumValue(
                     mConStr0([
-                        mConStr0([deserializeAddress(receiver!).pubKeyHash, deserializeAddress(receiver!).stakeCredentialHash]),
+                        1,
+                        // mConStr0([deserializeAddress(receiver!).pubKeyHash, deserializeAddress(receiver!).stakeCredentialHash]),
                         owners!.map((owner) => mConStr0([deserializeAddress(owner).pubKeyHash, deserializeAddress(owner).stakeCredentialHash])),
                         [],
                     ]),
@@ -109,7 +111,8 @@ export class MeshTxBuilder extends MeshAdapter {
                 .txOut(this.spendAddress, utxo.output.amount)
                 .txOutInlineDatumValue(
                     mConStr0([
-                        mConStr0([deserializeAddress(datum.receiver!).pubKeyHash, deserializeAddress(datum.receiver!).stakeCredentialHash]),
+                        1,
+                        // mConStr0([deserializeAddress(datum.receiver!).pubKeyHash, deserializeAddress(datum.receiver!).stakeCredentialHash]),
                         datum.owners!.map((owner) => mConStr0([deserializeAddress(owner).pubKeyHash, deserializeAddress(owner).stakeCredentialHash])),
                         [
                             ...datum.signers!.map((signer) =>

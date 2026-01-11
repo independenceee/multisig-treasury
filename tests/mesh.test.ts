@@ -15,7 +15,7 @@ describe("A multisig treasury is a shared fund where spending requires approval 
 
     beforeEach(async function () {
         meshWallet = new MeshWallet({
-            accountIndex: 1,
+            accountIndex: 0,
             networkId: APP_NETWORK_ID,
             fetcher: blockfrostProvider,
             submitter: blockfrostProvider,
@@ -38,7 +38,7 @@ describe("A multisig treasury is a shared fund where spending requires approval 
         });
 
         const unsignedTx: string = await meshTxBuilder.deposit({
-            name: "Aiken Course 2024",
+            name: "Aiken Course 2023",
             quantity: "10000000",
             receiver: "addr_test1qz45qtdupp8g30lzzr684m8mc278s284cjvawna5ypwkvq7s8xszw9mgmwpxdyakl7dgpfmzywctzlsaghnqrl494wnqhgsy3g",
             owners: [
@@ -93,7 +93,7 @@ describe("A multisig treasury is a shared fund where spending requires approval 
         });
 
         const unsignedTx: string = await meshTxBuilder.signature({
-            name: "Aiken Course 2024",
+            name: "Aiken Course 2023",
         });
 
         const signedTx = await meshWallet.signTx(unsignedTx, true);
