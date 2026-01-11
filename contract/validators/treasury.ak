@@ -2,7 +2,7 @@ use aiken/collection/list
 use cardano/assets.{PolicyId, lovelace_of, without_lovelace}
 use cardano/transaction.{InlineDatum, OutputReference, Transaction, find_input}
 use cocktail/vodka_address.{address_pub_key, compare_address}
-use contract/types.{Datum, Deposit, End, Execute, Init, Mint, Signature, Spend}
+use contract/types.{TreasuryDatum, Deposit, End, Execute, Init, Mint, Signature, Spend}
 use validation/find.{output_by_addr_value}
 
 validator treasury(threshold: Int, allowance: Int) {
@@ -14,7 +14,7 @@ validator treasury(threshold: Int, allowance: Int) {
   }
 
   spend(
-    datum_option: Option<Datum>,
+    datum_option: Option<TreasuryDatum>,
     redeemer: Spend,
     output_reference: OutputReference,
     transaction: Transaction,
@@ -32,7 +32,7 @@ validator treasury(threshold: Int, allowance: Int) {
     when redeemer is {
       Deposit -> {
         expect InlineDatum(datum_output_raw) = output.datum
-        expect datum_output: Datum = datum_output_raw
+        expect datum_output: TreasuryDatum = datum_output_raw
 
         and {
           True,
@@ -69,13 +69,14 @@ validator treasury(threshold: Int, allowance: Int) {
         //   )
 
         expect InlineDatum(inline_datum_output) = output.datum
-        expect datum_output: Datum = inline_datum_output
-
+        expect datum_output: TreasuryDatum = inline_datum_output
+  
         and {
           True,
           // list.length(signers) > 0,
           // datum_input.owners == datum_output.owners,
-          datum_input.receiver == datum_output.receiver,
+          // datum_input.receiver == datum_output.receiver,
+         list.length(datum_output.signers) == 1
         }
       }
     }
