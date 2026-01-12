@@ -234,13 +234,10 @@ export class MeshAdapter {
     } => {
         try {
             const datum = deserializeDatum(plutusData);
-            console.log(datum)
-            const receiver = "1"
-            // const receiver = serializeAddressObj(
-            //     pubKeyAddress(datum.fields[0].fields[0].bytes, datum.fields[0].fields[1].bytes, false),
-            //     APP_NETWORK_ID,
-            // );
-
+            const receiver = serializeAddressObj(
+                pubKeyAddress(datum.fields[0].fields[0].bytes, datum.fields[0].fields[1].bytes, false),
+                APP_NETWORK_ID,
+            );
             const owners = datum.fields[1].list.map((owner: any) =>
                 serializeAddressObj(pubKeyAddress(owner.fields[0].bytes, owner.fields[1].bytes, false), APP_NETWORK_ID),
             );

@@ -1,6 +1,6 @@
 import { MeshAdapter } from "../adapters/mesh.adapter";
 import { APP_NETWORK } from "../constants/enviroments.constant";
-import { deserializeAddress, mConStr0, mConStr1, mConStr2, stringToHex } from "@meshsdk/core";
+import { deserializeAddress,pubKeyAddress, mConStr0, mConStr1, mConStr2, stringToHex } from "@meshsdk/core";
 
 export class MeshTxBuilder extends MeshAdapter {
     deposit = async ({
@@ -22,9 +22,8 @@ export class MeshTxBuilder extends MeshAdapter {
 
         if (utxo) {
             const datum = this.convertDatum({ plutusData: utxo.output.plutusData as string });
-
             unsignedTx
-                .spendingPlutusScript("V3")
+                .spendingPlutusScriptV3()
                 .txIn(utxo.input.txHash, utxo.input.outputIndex)
                 .txInInlineDatumPresent()
                 .txInRedeemerValue(mConStr0([]))
@@ -46,8 +45,7 @@ export class MeshTxBuilder extends MeshAdapter {
                 ])
                 .txOutInlineDatumValue(
                     mConStr0([
-                        1,
-                        // mConStr0([deserializeAddress(datum.receiver!).pubKeyHash, deserializeAddress(datum.receiver!).stakeCredentialHash]),
+                        mConStr0([deserializeAddress(datum.receiver!).pubKeyHash, deserializeAddress(datum.receiver!).stakeCredentialHash]),
                         datum.owners!.map((owner) => mConStr0([deserializeAddress(owner).pubKeyHash, deserializeAddress(owner).stakeCredentialHash])),
                         datum.signers!.map((signer) =>
                             mConStr0([deserializeAddress(signer).pubKeyHash, deserializeAddress(signer).stakeCredentialHash]),
@@ -73,8 +71,7 @@ export class MeshTxBuilder extends MeshAdapter {
                 ])
                 .txOutInlineDatumValue(
                     mConStr0([
-                        1,
-                        // mConStr0([deserializeAddress(receiver!).pubKeyHash, deserializeAddress(receiver!).stakeCredentialHash]),
+                        mConStr0([deserializeAddress(receiver!).pubKeyHash, deserializeAddress(receiver!).stakeCredentialHash]),
                         owners!.map((owner) => mConStr0([deserializeAddress(owner).pubKeyHash, deserializeAddress(owner).stakeCredentialHash])),
                         [],
                     ]),
@@ -111,8 +108,7 @@ export class MeshTxBuilder extends MeshAdapter {
                 .txOut(this.spendAddress, utxo.output.amount)
                 .txOutInlineDatumValue(
                     mConStr0([
-                        1,
-                        // mConStr0([deserializeAddress(datum.receiver!).pubKeyHash, deserializeAddress(datum.receiver!).stakeCredentialHash]),
+                        mConStr0([deserializeAddress(datum.receiver!).pubKeyHash, deserializeAddress(datum.receiver!).stakeCredentialHash]),
                         datum.owners!.map((owner) => mConStr0([deserializeAddress(owner).pubKeyHash, deserializeAddress(owner).stakeCredentialHash])),
                         [
                             ...datum.signers!.map((signer) =>
