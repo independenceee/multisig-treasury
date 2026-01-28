@@ -55,17 +55,25 @@ export class MeshAdapter {
      *
      * @param {MeshWallet} meshWallet - Active Mesh wallet instance to connect.
      */
-    constructor({ meshWallet = null!, threshold = 1, allowance = 10* DECIMAL_PLACE }: { meshWallet: MeshWallet; threshold?: number, allowance: number }) {
+    constructor({
+        meshWallet = null!,
+        threshold = 1,
+        allowance = 10 * DECIMAL_PLACE,
+    }: {
+        meshWallet: MeshWallet;
+        threshold?: number;
+        allowance: number;
+    }) {
         this.meshWallet = meshWallet;
         this.threshold = threshold;
-        this.allowance = allowance
+        this.allowance = allowance;
         this.fetcher = blockfrostProvider;
         this.meshTxBuilder = new MeshTxBuilder({
             fetcher: this.fetcher,
             evaluator: blockfrostProvider,
         });
 
-        this.mintCompileCode = this.readValidator(plutus as Plutus, title.mint);
+        this.mintCompileCode = this.readValidator(plutus as Plutus, title.identityFactory);
         this.mintScriptCbor = applyParamsToScript(this.mintCompileCode, [this.threshold, this.allowance]);
         this.mintScript = {
             code: this.mintScriptCbor,
@@ -73,7 +81,7 @@ export class MeshAdapter {
         };
         this.policyId = resolveScriptHash(this.mintScriptCbor, "V3");
 
-        this.spendCompileCode = this.readValidator(plutus as Plutus, title.spend);
+        this.spendCompileCode = this.readValidator(plutus as Plutus, title.multisigTreasury);
         this.spendScriptCbor = applyParamsToScript(this.spendCompileCode, [this.threshold, this.allowance]);
         this.spendScript = {
             code: this.spendScriptCbor,
