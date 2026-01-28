@@ -237,30 +237,63 @@ export class MeshAdapter {
         plutusData: string;
     }): {
         receiver: string;
-        owners: Array<string>;
-        signers: Array<string>;
+        owners: string[];
+        signers: string[];
     } => {
         try {
             const datum = deserializeDatum(plutusData);
-            const receiver = serializeAddressObj(
-                pubKeyAddress(datum.fields[0].fields[0].bytes, datum.fields[0].fields[1].bytes, false),
-                APP_NETWORK_ID,
-            );
-            const owners = datum.fields[1].list.map((owner: any) =>
-                serializeAddressObj(pubKeyAddress(owner.fields[0].bytes, owner.fields[1].bytes, false), APP_NETWORK_ID),
-            );
+            console.dir(datum, { depth: null, colors: true }); // giữ nếu cần debug
 
-            const signers = datum.fields[2].list.map((owner: any) =>
-                serializeAddressObj(pubKeyAddress(owner.fields[0].bytes, owner.fields[1].bytes, false), APP_NETWORK_ID),
-            );
-
-            return {
-                receiver: receiver,
-                owners: owners,
-                signers: signers,
+            const buildAddress = (paymentHex: string, stakeHex?: string): string => {
+                if (typeof paymentHex !== "string" || paymentHex.length !== 56) {
+                    throw new Error(`Invalid payment hex length (expected 56): ${paymentHex}`);
+                }
+                if (stakeHex && stakeHex.length !== 56) {
+                    throw new Error(`Invalid stake hex length (expected 56): ${stakeHex}`);
+                }
+                return serializeAddressObj(pubKeyAddress(paymentHex, stakeHex || "", false), APP_NETWORK_ID);
             };
-        } catch (error) {
-            throw new Error(String(error));
+
+            // 1. Receiver - theo đúng nesting thực tế
+            const receiverPayment = datum.fields?.[0]?.fields?.[0]?.fields?.[0]?.bytes;
+            const receiverStake = datum.fields?.[0]?.fields?.[1]?.fields?.[0]?.fields?.[0]?.fields?.[0]?.bytes;
+
+            if (!receiverPayment) {
+                throw new Error("Missing receiver payment credential (path: fields[0].fields[0].fields[0].bytes)");
+            }
+
+            const receiver = buildAddress(receiverPayment, receiverStake);
+
+            // 2. Owners - path chính xác theo datum thực tế
+            const ownersList = datum.fields?.[1]?.list || [];
+            const owners = ownersList.map((item: any, index: number) => {
+                const payment = item?.fields?.[0]?.fields?.[0]?.bytes;
+                const stake = item?.fields?.[1]?.fields?.[0]?.fields?.[0]?.fields?.[0]?.bytes;
+
+                if (!payment) {
+                    throw new Error(`Owner #${index + 1} missing payment (path: fields[0].fields[0].bytes)`);
+                }
+
+                return buildAddress(payment, stake); // stake optional → nếu undefined thì enterprise addr
+            });
+
+            // 3. Signers - path tương tự owners (list rỗng thì trả [])
+            const signersList = datum.fields?.[2]?.list || [];
+            const signers = signersList.map((item: any, index: number) => {
+                const payment = item?.fields?.[0]?.fields?.[0]?.bytes;
+                const stake = item?.fields?.[1]?.fields?.[0]?.fields?.[0]?.fields?.[0]?.bytes;
+
+                if (!payment) {
+                    throw new Error(`Signer #${index + 1} missing payment (path: fields[0].fields[0].bytes)`);
+                }
+
+                return buildAddress(payment, stake);
+            });
+
+            return { receiver, owners, signers };
+        } catch (err) {
+            console.error("Datum parsing failed:", err);
+            throw new Error(`Invalid Plutus datum: ${err instanceof Error ? err.message : String(err)}`);
         }
     };
 }
