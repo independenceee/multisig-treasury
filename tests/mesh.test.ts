@@ -15,7 +15,7 @@ describe("A multisig treasury is a shared fund where spending requires approval 
 
     beforeEach(async function () {
         meshWallet = new MeshWallet({
-            accountIndex: 2,
+            accountIndex: 1,
             networkId: APP_NETWORK_ID,
             fetcher: blockfrostProvider,
             submitter: blockfrostProvider,
@@ -29,7 +29,7 @@ describe("A multisig treasury is a shared fund where spending requires approval 
     jest.setTimeout(600000000);
 
     test("Init", async function () {
-        // return;
+        return;
         const meshTxBuilder: MeshTxBuilder = new MeshTxBuilder({
             meshWallet: meshWallet,
             threshold: 2,
@@ -58,42 +58,16 @@ describe("A multisig treasury is a shared fund where spending requires approval 
         });
     });
 
-    test("Init", async function () {
+    test("Deposit", async function () {
         return;
-
         const meshTxBuilder: MeshTxBuilder = new MeshTxBuilder({
             meshWallet: meshWallet,
             threshold: 2,
             allowance: 10 * DECIMAL_PLACE,
             name: "Aiken Course 2025",
         });
-        const unsignedTx: string = await meshTxBuilder.execute({
-            name: "Aiken Course 2025",
-            amount: "10000000",
-        });
-
-        const signedTx = await meshWallet.signTx(unsignedTx, true);
-        const txHash = await meshWallet.submitTx(signedTx);
-        await new Promise<void>(function (resolve) {
-            blockfrostProvider.onTxConfirmed(txHash, () => {
-                console.log("https://preview.cexplorer.io/tx/" + txHash);
-                resolve();
-            });
-        });
-    });
-
-    test("Execute", async function () {
-        return;
-
-        const meshTxBuilder: MeshTxBuilder = new MeshTxBuilder({
-            meshWallet: meshWallet,
-            threshold: 2,
-            allowance: 10 * DECIMAL_PLACE,
-            name: "Aiken Course 2025",
-        });
-        const unsignedTx: string = await meshTxBuilder.execute({
-            name: "Aiken Course 2025",
-            amount: "10000000",
+        const unsignedTx: string = await meshTxBuilder.deposit({
+            quantity: "10000000",
         });
 
         const signedTx = await meshWallet.signTx(unsignedTx, true);
@@ -108,7 +82,6 @@ describe("A multisig treasury is a shared fund where spending requires approval 
 
     test("Signature", async function () {
         return;
-
          const meshTxBuilder: MeshTxBuilder = new MeshTxBuilder({
             meshWallet: meshWallet,
             threshold: 2,
@@ -116,9 +89,51 @@ describe("A multisig treasury is a shared fund where spending requires approval 
             name: "Aiken Course 2025",
         });
 
-        const unsignedTx: string = await meshTxBuilder.signature({
+        const unsignedTx: string = await meshTxBuilder.signature();
+
+        const signedTx = await meshWallet.signTx(unsignedTx, true);
+        const txHash = await meshWallet.submitTx(signedTx);
+        await new Promise<void>(function (resolve) {
+            blockfrostProvider.onTxConfirmed(txHash, () => {
+                console.log("https://preview.cexplorer.io/tx/" + txHash);
+                resolve();
+            });
+        });
+    });
+
+    test("Execute", async function () {
+        return;
+        const meshTxBuilder: MeshTxBuilder = new MeshTxBuilder({
+            meshWallet: meshWallet,
+            threshold: 2,
+            allowance: 10 * DECIMAL_PLACE,
             name: "Aiken Course 2025",
         });
+        const unsignedTx: string = await meshTxBuilder.execute({
+        
+            amount: "10000000",
+        });
+
+        const signedTx = await meshWallet.signTx(unsignedTx, true);
+        const txHash = await meshWallet.submitTx(signedTx);
+        await new Promise<void>(function (resolve) {
+            blockfrostProvider.onTxConfirmed(txHash, () => {
+                console.log("https://preview.cexplorer.io/tx/" + txHash);
+                resolve();
+            });
+        });
+    });
+
+    test("End", async function () {
+        return;
+         const meshTxBuilder: MeshTxBuilder = new MeshTxBuilder({
+            meshWallet: meshWallet,
+            threshold: 2,
+            allowance: 10 * DECIMAL_PLACE,
+            name: "Aiken Course 2025",
+        });
+
+        const unsignedTx: string = await meshTxBuilder.end();
 
         const signedTx = await meshWallet.signTx(unsignedTx, true);
         const txHash = await meshWallet.submitTx(signedTx);

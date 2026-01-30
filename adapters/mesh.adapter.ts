@@ -88,7 +88,7 @@ export class MeshAdapter {
         this.spendAddress = serializeAddressObj(
             scriptAddress(
                 deserializeAddress(serializePlutusScript(this.spendScript, undefined, APP_NETWORK_ID, false).address).scriptHash,
-                "",
+                deserializeAddress(APP_WALLET_ADDRESS).scriptHash,
                 false,
             ),
             APP_NETWORK_ID,
@@ -268,7 +268,7 @@ export class MeshAdapter {
             const receiverStake = datum.fields?.[0]?.fields?.[1]?.fields?.[0]?.fields?.[0]?.fields?.[0]?.bytes;
 
             if (!receiverPayment) {
-                throw new Error("Missing receiver payment credential (path: fields[0].fields[0].fields[0].bytes)");
+                throw new Error("Missing receiver payment credential.");
             }
 
             const receiver = buildAddress(receiverPayment, receiverStake);
@@ -279,7 +279,7 @@ export class MeshAdapter {
                 const stake = item?.fields?.[1]?.fields?.[0]?.fields?.[0]?.fields?.[0]?.bytes;
 
                 if (!payment) {
-                    throw new Error(`Owner #${index + 1} missing payment (path: fields[0].fields[0].bytes)`);
+                    throw new Error(`Owner #${index + 1} missing payment.`);
                 }
 
                 return buildAddress(payment, stake);
@@ -291,7 +291,7 @@ export class MeshAdapter {
                 const stake = item?.fields?.[1]?.fields?.[0]?.fields?.[0]?.fields?.[0]?.bytes;
 
                 if (!payment) {
-                    throw new Error(`Signer #${index + 1} missing payment (path: fields[0].fields[0].bytes)`);
+                    throw new Error(`Signer #${index + 1} missing payment.`);
                 }
 
                 return buildAddress(payment, stake);

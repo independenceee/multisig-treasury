@@ -9,7 +9,7 @@ export class MeshTxBuilder extends MeshAdapter {
         const utxo = await this.getAddressUTXOAsset(this.spendAddress, this.policyId + stringToHex(this.name));
 
         if (utxo) {
-            throw new Error("Treasury has been created.");
+            throw new Error("Treasury has been exists.");
         }
 
         const unsignedTx = this.meshTxBuilder;
@@ -42,21 +42,10 @@ export class MeshTxBuilder extends MeshAdapter {
             .setNetwork(APP_NETWORK);
         return await unsignedTx.complete();
     };
-    
-    deposit = async ({
-        quantity,
-        receiver,
-        name,
-        owners,
-    }: {
-        name: string;
-        quantity: string;
-        receiver?: string;
-        owners?: string[];
-        signers?: string[];
-    }): Promise<string> => {
+
+    deposit = async ({ quantity }: { quantity: string }): Promise<string> => {
         const { utxos, walletAddress, collateral } = await this.getWalletForTx();
-        const utxo = await this.getAddressUTXOAsset(this.spendAddress, this.policyId + stringToHex(name));
+        const utxo = await this.getAddressUTXOAsset(this.spendAddress, this.policyId + stringToHex(this.name));
 
         const unsignedTx = this.meshTxBuilder;
 
@@ -70,7 +59,7 @@ export class MeshTxBuilder extends MeshAdapter {
                 .txInScript(this.spendScriptCbor)
 
                 .txOut(this.spendAddress, [
-                    { unit: this.policyId + stringToHex(name), quantity: "1" },
+                    { unit: this.policyId + stringToHex(this.name), quantity: "1" },
                     {
                         unit: "lovelace",
                         quantity: String(
@@ -95,29 +84,7 @@ export class MeshTxBuilder extends MeshAdapter {
                     ]),
                 );
         } else {
-            unsignedTx
-                .mintPlutusScriptV3()
-                .mint("1", this.policyId, stringToHex(name))
-                .mintingScript(this.mintScriptCbor)
-                .mintRedeemerValue(mConStr0([]))
-
-                .txOut(this.spendAddress, [
-                    {
-                        unit: this.policyId + stringToHex(name),
-                        quantity: "1",
-                    },
-                    {
-                        unit: "lovelace",
-                        quantity: quantity,
-                    },
-                ])
-                .txOutInlineDatumValue(
-                    mConStr0([
-                        mPubKeyAddress(deserializeAddress(receiver!).pubKeyHash, deserializeAddress(receiver!).stakeCredentialHash),
-                        owners!.map((owner) => mPubKeyAddress(deserializeAddress(owner).pubKeyHash, deserializeAddress(owner).stakeCredentialHash)),
-                        [],
-                    ]),
-                );
+            throw new Error("No proposals were found from Treasury");
         }
         unsignedTx
             .selectUtxosFrom(utxos)
@@ -129,13 +96,14 @@ export class MeshTxBuilder extends MeshAdapter {
         return await unsignedTx.complete();
     };
 
-    signature = async ({ name }: { name: string }): Promise<string> => {
+    signature = async (): Promise<string> => {
         const { utxos, walletAddress, collateral } = await this.getWalletForTx();
 
         const unsignedTx = this.meshTxBuilder;
-        const utxo = await this.getAddressUTXOAsset(this.spendAddress, this.policyId + stringToHex(name));
+        const utxo = await this.getAddressUTXOAsset(this.spendAddress, this.policyId + stringToHex(this.name));
+
         if (!utxo) {
-            throw new Error("Cannot find proposal from Treasury");
+            throw new Error("No proposals were found from Treasury");
         }
 
         const datum = this.convertDatum({ plutusData: utxo.output.plutusData as string });
@@ -163,7 +131,7 @@ export class MeshTxBuilder extends MeshAdapter {
                     ]),
                 );
         } else {
-            throw new Error("Wallet is signed");
+            throw new Error("The owner has already signed.");
         }
 
         unsignedTx
@@ -175,23 +143,114 @@ export class MeshTxBuilder extends MeshAdapter {
         return await unsignedTx.complete();
     };
 
-    execute = async ({ name, amount }: { name: string; amount: string }): Promise<string> => {
+    execute = async ({ amount }: { amount: string }): Promise<string> => {
         const { utxos, walletAddress, collateral } = await this.getWalletForTx();
 
         const unsignedTx = this.meshTxBuilder;
 
-        const utxo = await this.getAddressUTXOAsset(this.spendAddress, this.policyId + stringToHex(name));
+        const utxo = await this.getAddressUTXOAsset(this.spendAddress, this.policyId + stringToHex(this.name));
 
         if (!utxo) {
             throw new Error("Cannot find proposal from Treasury");
         }
 
         const datum = this.convertDatum({ plutusData: utxo.output.plutusData as string });
+        const value = utxo.output.amount.reduce((total, asset) => {
+            if (asset.unit === "lovelace") {
+                return total + Number(asset.quantity);
+            }
+            return total;
+        }, Number(0));
+        if (datum.signers.length >= this.threshold || Number(amount) > this.allowance) {
+            if (value === Number(amount)) {
+                unsignedTx
+                    .mintPlutusScriptV3()
+                    .mint("-1", this.policyId, stringToHex(this.name))
+                    .mintRedeemerValue(mConStr1([]))
+                    .mintingScript(this.mintScriptCbor)
 
-        if (datum.signers.length >= this.threshold) {
+                    .spendingPlutusScriptV3()
+                    .txIn(utxo.input.txHash, utxo.input.outputIndex)
+                    .txInInlineDatumPresent()
+                    .txInRedeemerValue(mConStr1([]))
+                    .txInScript(this.spendScriptCbor)
+
+                    .txOut(datum.receiver, [
+                        {
+                            unit: "lovelace",
+                            quantity: String(value),
+                        },
+                    ]);
+            } else {
+                unsignedTx
+                    .spendingPlutusScriptV3()
+                    .txIn(utxo.input.txHash, utxo.input.outputIndex)
+                    .txInInlineDatumPresent()
+                    .txInRedeemerValue(mConStr1([]))
+                    .txInScript(this.spendScriptCbor)
+
+                    .txOut(datum.receiver, [
+                        {
+                            unit: "lovelace",
+                            quantity: amount,
+                        },
+                    ])
+                    .txOut(this.spendAddress, [
+                        {
+                            unit: "lovelace",
+                            quantity: String(value - Number(amount)),
+                        },
+                        {
+                            unit: this.policyId + stringToHex(this.name),
+                            quantity: "1",
+                        },
+                    ])
+                    .txOutInlineDatumValue(
+                        mConStr0([
+                            mPubKeyAddress(deserializeAddress(datum.receiver!).pubKeyHash, deserializeAddress(datum.receiver!).stakeCredentialHash),
+                            datum.owners!.map((owner) =>
+                                mPubKeyAddress(deserializeAddress(owner).pubKeyHash, deserializeAddress(owner).stakeCredentialHash),
+                            ),
+                            [],
+                        ]),
+                    );
+            }
+        } else {
+            throw new Error("Not enough signatures to proceed with disbursement.");
+        }
+        unsignedTx
+            .selectUtxosFrom(utxos)
+            .changeAddress(walletAddress)
+            .requiredSignerHash(deserializeAddress(walletAddress).pubKeyHash)
+            .txInCollateral(collateral.input.txHash, collateral.input.outputIndex)
+            .setNetwork(APP_NETWORK);
+
+        return await unsignedTx.complete();
+    };
+
+    end = async (): Promise<string> => {
+        const { utxos, walletAddress, collateral } = await this.getWalletForTx();
+
+        const unsignedTx = this.meshTxBuilder;
+
+        const utxo = await this.getAddressUTXOAsset(this.spendAddress, this.policyId + stringToHex(this.name));
+
+        if (!utxo) {
+            throw new Error("Cannot find proposal from Treasury");
+        }
+
+        const datum = this.convertDatum({ plutusData: utxo.output.plutusData as string });
+        const value = utxo.output.amount.reduce((total, asset) => {
+            if (asset.unit === "lovelace") {
+                return total + Number(asset.quantity);
+            }
+            return total;
+        }, Number(0));
+
+        if (value <= this.allowance && datum.signers.length >= this.threshold) {
             unsignedTx
                 .mintPlutusScriptV3()
-                .mint("-1", this.policyId, stringToHex(name))
+                .mint("-1", this.policyId, stringToHex(this.name))
                 .mintRedeemerValue(mConStr1([]))
                 .mintingScript(this.mintScriptCbor)
 
@@ -204,25 +263,20 @@ export class MeshTxBuilder extends MeshAdapter {
                 .txOut(datum.receiver, [
                     {
                         unit: "lovelace",
-                        quantity: String(
-                            utxo.output.amount.reduce((total, asset) => {
-                                if (asset.unit === "lovelace") {
-                                    return total + Number(asset.quantity);
-                                }
-                                return total;
-                            }, Number(0)),
-                        ),
+                        quantity: String(value),
                     },
                 ]);
         } else {
-            throw new Error("Cannot execute !");
+            throw new Error("Not enough signatures to proceed with disbursement.")
         }
+
         unsignedTx
             .selectUtxosFrom(utxos)
             .changeAddress(walletAddress)
             .requiredSignerHash(deserializeAddress(walletAddress).pubKeyHash)
             .txInCollateral(collateral.input.txHash, collateral.input.outputIndex)
             .setNetwork(APP_NETWORK);
+
         return await unsignedTx.complete();
     };
 }
