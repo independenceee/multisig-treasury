@@ -28,18 +28,16 @@ describe("A multisig treasury is a shared fund where spending requires approval 
 
     jest.setTimeout(600000000);
 
-    test("Deposit", async function () {
-        return;
-
+    test("Init", async function () {
+        // return;
         const meshTxBuilder: MeshTxBuilder = new MeshTxBuilder({
             meshWallet: meshWallet,
             threshold: 2,
             allowance: 10 * DECIMAL_PLACE,
+            name: "Aiken Course 2025",
         });
 
-        const unsignedTx: string = await meshTxBuilder.deposit({
-            name: "Aiken Course 2025",
-            quantity: "10000000",
+        const unsignedTx: string = await meshTxBuilder.init({
             receiver: "addr_test1qz45qtdupp8g30lzzr684m8mc278s284cjvawna5ypwkvq7s8xszw9mgmwpxdyakl7dgpfmzywctzlsaghnqrl494wnqhgsy3g",
             owners: [
                 "addr_test1qz45qtdupp8g30lzzr684m8mc278s284cjvawna5ypwkvq7s8xszw9mgmwpxdyakl7dgpfmzywctzlsaghnqrl494wnqhgsy3g",
@@ -60,6 +58,30 @@ describe("A multisig treasury is a shared fund where spending requires approval 
         });
     });
 
+    test("Init", async function () {
+        return;
+
+        const meshTxBuilder: MeshTxBuilder = new MeshTxBuilder({
+            meshWallet: meshWallet,
+            threshold: 2,
+            allowance: 10 * DECIMAL_PLACE,
+            name: "Aiken Course 2025",
+        });
+        const unsignedTx: string = await meshTxBuilder.execute({
+            name: "Aiken Course 2025",
+            amount: "10000000",
+        });
+
+        const signedTx = await meshWallet.signTx(unsignedTx, true);
+        const txHash = await meshWallet.submitTx(signedTx);
+        await new Promise<void>(function (resolve) {
+            blockfrostProvider.onTxConfirmed(txHash, () => {
+                console.log("https://preview.cexplorer.io/tx/" + txHash);
+                resolve();
+            });
+        });
+    });
+
     test("Execute", async function () {
         return;
 
@@ -67,8 +89,8 @@ describe("A multisig treasury is a shared fund where spending requires approval 
             meshWallet: meshWallet,
             threshold: 2,
             allowance: 10 * DECIMAL_PLACE,
+            name: "Aiken Course 2025",
         });
-
         const unsignedTx: string = await meshTxBuilder.execute({
             name: "Aiken Course 2025",
             amount: "10000000",
@@ -85,12 +107,13 @@ describe("A multisig treasury is a shared fund where spending requires approval 
     });
 
     test("Signature", async function () {
-        // return;
+        return;
 
-        const meshTxBuilder: MeshTxBuilder = new MeshTxBuilder({
+         const meshTxBuilder: MeshTxBuilder = new MeshTxBuilder({
             meshWallet: meshWallet,
             threshold: 2,
             allowance: 10 * DECIMAL_PLACE,
+            name: "Aiken Course 2025",
         });
 
         const unsignedTx: string = await meshTxBuilder.signature({

@@ -1,6 +1,6 @@
 export const DECIMAL_PLACE = 1_000_000;
 
 export const title = {
-    identityFactory: "multisig_treasury.multisig_treasury.mint",
+    identityFactory: "identity_factory.identity_factory.mint",
     multisigTreasury: "multisig_treasury.multisig_treasury.spend",
 };

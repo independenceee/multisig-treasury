@@ -3,6 +3,46 @@ import { APP_NETWORK } from "../constants/enviroments.constant";
 import { deserializeAddress, pubKeyAddress, mConStr0, mConStr1, mConStr2, stringToHex, mPubKeyAddress } from "@meshsdk/core";
 
 export class MeshTxBuilder extends MeshAdapter {
+    init = async ({ receiver, owners }: { receiver: string; owners: Array<string> }): Promise<string> => {
+        const { utxos, walletAddress, collateral } = await this.getWalletForTx();
+
+        const utxo = await this.getAddressUTXOAsset(this.spendAddress, this.policyId + stringToHex(this.name));
+
+        if (utxo) {
+            throw new Error("Treasury has been created.");
+        }
+
+        const unsignedTx = this.meshTxBuilder;
+
+        unsignedTx
+            .mintPlutusScriptV3()
+            .mint("1", this.policyId, stringToHex(this.name))
+            .mintingScript(this.mintScriptCbor)
+            .mintRedeemerValue(mConStr0([]))
+
+            .txOut(this.spendAddress, [
+                {
+                    unit: this.policyId + stringToHex(this.name),
+                    quantity: "1",
+                },
+            ])
+            .txOutInlineDatumValue(
+                mConStr0([
+                    mPubKeyAddress(deserializeAddress(receiver!).pubKeyHash, deserializeAddress(receiver!).stakeCredentialHash),
+                    owners!.map((owner) => mPubKeyAddress(deserializeAddress(owner).pubKeyHash, deserializeAddress(owner).stakeCredentialHash)),
+                    [],
+                ]),
+            );
+
+        unsignedTx
+            .selectUtxosFrom(utxos)
+            .changeAddress(walletAddress)
+            .requiredSignerHash(deserializeAddress(walletAddress).pubKeyHash)
+            .txInCollateral(collateral.input.txHash, collateral.input.outputIndex)
+            .setNetwork(APP_NETWORK);
+        return await unsignedTx.complete();
+    };
+    
     deposit = async ({
         quantity,
         receiver,
