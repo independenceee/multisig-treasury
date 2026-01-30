@@ -1,15 +1,26 @@
 use aiken/collection/list
-use cardano/assets.{AssetName, lovelace_of, without_lovelace}
+use cardano/assets.{lovelace_of, without_lovelace}
 use cardano/transaction.{InlineDatum, OutputReference, Transaction, find_input}
 use cardano/tx.{verify_signature}
 use cocktail/vodka_address.{address_pub_key}
 use contract/types.{Datum, Deposit, Execute, Signature, Spend}
 use validation/find.{output_by_addr, output_by_addr_value}
 
-validator multisig_treasury(
-  threshold: Int,
-  allowance: Int,
-) {
+/// ─────────────────────────────────────────────────────────────────────────────
+/// Multisig Treasury – Spend Validator
+///
+/// This validator manages a shared treasury controlled by multiple owners.
+///
+/// Parameters:
+///   • threshold: minimum number of collected signatures required to execute
+///   • allowance: maximum amount of ADA that can be released per execution
+///
+/// Supported actions:
+///   • Deposit   – add funds without changing the treasury state
+///   • Signature – collect valid owner signatures
+///   • Execute   – release funds to the receiver once threshold is met
+/// ─────────────────────────────────────────────────────────────────────────────
+validator multisig_treasury(threshold: Int, allowance: Int) {
   spend(
     datum_option: Option<Datum>,
     redeemer: Spend,
@@ -96,6 +107,9 @@ validator multisig_treasury(
     }
   }
 
+  /// ───────────────────────────────────────────────────────────────────────
+  /// Reject all other purposes (mint, withdraw, certificates, etc.)
+  /// ───────────────────────────────────────────────────────────────────────
   else(_) {
     fail
   }
