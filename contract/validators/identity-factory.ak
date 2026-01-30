@@ -64,6 +64,9 @@ validator identity_factory(
     }
   }
 
+  /// ───────────────────────────────────────────────────────────────────────
+  /// Reject all other purposes (mint, withdraw, certificates, etc.)
+  /// ───────────────────────────────────────────────────────────────────────
   else(_) {
     fail
   }
