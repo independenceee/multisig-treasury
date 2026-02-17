@@ -16,3 +16,4 @@ pub type Spend {
   Execute
   Signature
 }
+

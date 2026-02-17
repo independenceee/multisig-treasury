@@ -6,6 +6,7 @@ import Provider from "@/providers";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 
+
 const geistSans = Geist({
     variable: "--font-geist-sans",
     subsets: ["latin"],

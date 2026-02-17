@@ -5,7 +5,7 @@ use cardano/tx.{verify_signature}
 use cocktail/vodka_address.{address_pub_key}
 use contract/types.{Datum, Deposit, Execute, Signature, Spend}
 use validation/find.{output_by_addr, output_by_addr_value}
-
+use cardano/address.{Address}
 /// ─────────────────────────────────────────────────────────────────────────────
 /// Multisig Treasury – Spend Validator
 ///
@@ -20,7 +20,7 @@ use validation/find.{output_by_addr, output_by_addr_value}
 ///   • Signature – collect valid owner signatures
 ///   • Execute   – release funds to the receiver once threshold is met
 /// ─────────────────────────────────────────────────────────────────────────────
-validator multisig_treasury(threshold: Int, allowance: Int) {
+validator multisig_treasury(issuer: Address, threshold: Int, allowance: Int) {
   spend(
     datum_option: Option<Datum>,
     redeemer: Spend,

@@ -12,6 +12,7 @@ import {
     serializeAddressObj,
     serializePlutusScript,
     UTxO,
+    mPubKeyAddress
 } from "@meshsdk/core";
 import { blockfrostProvider } from "@/providers/cardano";
 import plutus from "../contract/plutus.json";
@@ -94,6 +95,7 @@ export class MeshAdapter {
 
         this.mintCompileCode = this.readValidator(plutus as Plutus, title.identityFactory);
         this.mintScriptCbor = applyParamsToScript(this.mintCompileCode, [
+           
             this.threshold,
             this.allowance,
             deserializeAddress(this.spendAddress).scriptHash,
