@@ -6,6 +6,7 @@ import { useCopyButton } from "fumadocs-ui/utils/use-copy-button";
 import { buttonVariants } from "fumadocs-ui/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "fumadocs-ui/components/ui/popover";
 import { cva } from "class-variance-authority";
+import Link from "next/link";
 
 const cache = new Map<string, string>();
 
@@ -140,11 +141,11 @@ export function ViewOptions({
             </PopoverTrigger>
             <PopoverContent className="flex flex-col overflow-auto">
                 {items.map((item) => (
-                    <a key={item.href} href={item.href} rel="noreferrer noopener" target="_blank" className={cn(optionVariants())}>
+                    <Link key={item.href} href={item.href} rel="noreferrer noopener" target="_blank" className={cn(optionVariants())}>
                         {item.icon}
                         {item.title}
                         <ExternalLinkIcon className="text-fd-muted-foreground size-3.5 ms-auto" />
-                    </a>
+                    </Link>
                 ))}
             </PopoverContent>
         </Popover>

@@ -6,7 +6,6 @@ import Provider from "@/providers";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 
-
 const geistSans = Geist({
     variable: "--font-geist-sans",
     subsets: ["latin"],
@@ -33,13 +32,13 @@ export default async function RootLayout({
     return (
         <html lang="en">
             <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-                <Provider session={session}>
-                    <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
-                        <Header />
-                        <aside>{children}</aside>
-                        <Footer />
-                    </main>
-                </Provider>
+                    <Provider session={session}>
+                        <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
+                            <Header />
+                            <aside>{children}</aside>
+                            <Footer />
+                        </main>
+                    </Provider>
             </body>
         </html>
     );
