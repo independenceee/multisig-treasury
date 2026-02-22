@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import Provider from "@/providers";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
+import { RootProvider } from 'fumadocs-ui/provider/next';
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -31,11 +32,13 @@ export default async function RootLayout({
     const session = await auth();
     return (
         <html lang="en">
-            <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+            <body className={`${geistSans.variable} ${geistMono.variable} flex flex-col min-h-screen antialiased`}>
                     <Provider session={session}>
                         <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
                             <Header />
-                            <aside>{children}</aside>
+                            <aside>
+                                 <RootProvider>{children}</RootProvider>
+                            </aside>
                             <Footer />
                         </main>
                     </Provider>
