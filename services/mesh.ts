@@ -222,7 +222,6 @@ export const withdraw = async function ({
         allowance: allowance,
         name: title,
     });
-
     const unsignedTx = await meshTxBuilder.execute({
         amount: String(amount * DECIMAL_PLACE),
     });

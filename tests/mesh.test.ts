@@ -30,12 +30,12 @@ describe("A multisig treasury is a shared fund where spending requires approval 
     jest.setTimeout(600000000);
 
     test("Init", async function () {
-        return;
+        // return;
         const meshTxBuilder: MeshTxBuilder = new MeshTxBuilder({
             meshWallet: meshWallet,
             threshold: 2,
             allowance: 11 * DECIMAL_PLACE,
-            name: "Aiken Course 2026",
+            name: "Aiken Course 2030",
         });
 
         const unsignedTx: string = await meshTxBuilder.init({
