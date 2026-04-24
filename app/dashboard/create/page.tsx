@@ -145,7 +145,7 @@ export default function Page() {
                         name={formValues.title}
                         title="Preview Your Multisig Treasury Configuration: Review Name, Threshold, Allowance, Signers & Security Rules Before Final On-Chain Deployment"
                         loading={false}
-                        allowance={formValues.allowance / DECIMAL_PLACE}
+                        allowance={formValues.allowance}
                         threshold={formValues.threshold}
                         signers={formValues.owners ? formValues.owners.split(",").map((owner) => owner.trim()) : []}
                         address={address || ""}
