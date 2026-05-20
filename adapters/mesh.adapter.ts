@@ -12,7 +12,7 @@ import {
     serializeAddressObj,
     serializePlutusScript,
     UTxO,
-    mPubKeyAddress
+    mPubKeyAddress,
 } from "@meshsdk/core";
 import { blockfrostProvider } from "@/providers/cardano";
 import plutus from "../contract/plutus.json";
@@ -45,7 +45,7 @@ export class MeshAdapter {
 
     protected fetcher: IFetcher;
     protected meshWallet: MeshWallet;
-    protected meshTxBuilder: MeshTxBuilder;
+    protected meshTxBuilder!: MeshTxBuilder;
 
     /**
      * @description
@@ -73,10 +73,6 @@ export class MeshAdapter {
         this.allowance = allowance;
         this.name = name;
         this.fetcher = blockfrostProvider;
-        this.meshTxBuilder = new MeshTxBuilder({
-            fetcher: this.fetcher,
-            evaluator: blockfrostProvider,
-        });
 
         this.spendCompileCode = this.readValidator(plutus as Plutus, title.multisigTreasury);
         this.spendScriptCbor = applyParamsToScript(this.spendCompileCode, [this.threshold, this.allowance]);
@@ -95,7 +91,6 @@ export class MeshAdapter {
 
         this.mintCompileCode = this.readValidator(plutus as Plutus, title.identityFactory);
         this.mintScriptCbor = applyParamsToScript(this.mintCompileCode, [
-           
             this.threshold,
             this.allowance,
             deserializeAddress(this.spendAddress).scriptHash,
@@ -107,6 +102,16 @@ export class MeshAdapter {
         };
         this.policyId = resolveScriptHash(this.mintScriptCbor, "V3");
     }
+
+    public initalize = async (): Promise<void> => {
+        const protocolParameters = await this.fetcher.fetchProtocolParameters(1303);
+        console.log("Protocol Parameters: ", protocolParameters);
+        this.meshTxBuilder = new MeshTxBuilder({
+            params: protocolParameters,
+            fetcher: this.fetcher,
+            evaluator: blockfrostProvider,
+        });
+    };
 
     /**
      * @description
