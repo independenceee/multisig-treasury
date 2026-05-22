@@ -12,7 +12,6 @@ import {
     serializeAddressObj,
     serializePlutusScript,
     UTxO,
-    mPubKeyAddress,
 } from "@meshsdk/core";
 import { blockfrostProvider } from "@/providers/cardano";
 import plutus from "../contract/plutus.json";
@@ -104,10 +103,7 @@ export class MeshAdapter {
     }
 
     public initalize = async (): Promise<void> => {
-        const protocolParameters = await this.fetcher.fetchProtocolParameters(1303);
-        console.log("Protocol Parameters: ", protocolParameters);
         this.meshTxBuilder = new MeshTxBuilder({
-            params: protocolParameters,
             fetcher: this.fetcher,
             evaluator: blockfrostProvider,
         });

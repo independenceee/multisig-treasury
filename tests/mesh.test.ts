@@ -1,7 +1,7 @@
-import { MeshWallet } from "@meshsdk/core";
+import { BlockfrostProvider, MeshWallet } from "@meshsdk/core";
 import { MeshTxBuilder } from "../txbuilders/mesh.txbuilder";
 import { blockfrostProvider } from "../providers/cardano";
-import { APP_MNEMONIC, APP_NETWORK, APP_NETWORK_ID } from "../constants/enviroments";
+import { APP_MNEMONIC, APP_NETWORK, APP_NETWORK_ID, BLOCKFROST_API_KEY } from "../constants/enviroments";
 import { DECIMAL_PLACE } from "../constants/common.constant";
 import { getHistories } from "@/services/treasury";
 
@@ -15,6 +15,7 @@ describe("A multisig treasury is a shared fund where spending requires approval 
     // account 4 - addr_test1qpm9a92nk6grxwsxluqyjt9xd3cjcps90fjv8txm4spd6tv4mkujqpc7fzlvqu40kyvzh6fxmqp0578uk564ffqtfr7s9ppr9y
 
     beforeEach(async function () {
+        // const blockfrostProvider = new BlockfrostProvider(BLOCKFROST_API_KEY);
         meshWallet = new MeshWallet({
             accountIndex: 0,
             networkId: APP_NETWORK_ID,
@@ -25,10 +26,6 @@ describe("A multisig treasury is a shared fund where spending requires approval 
                 words: APP_MNEMONIC?.split(" ") || [],
             },
         });
-
-        console.log("Wallet Address: " + (await meshWallet.getChangeAddress()));
-        console.log("Network ID: " + APP_NETWORK_ID);
-        console.log("Network: " + APP_NETWORK);
     });
 
     jest.setTimeout(600000000);
@@ -53,6 +50,7 @@ describe("A multisig treasury is a shared fund where spending requires approval 
         });
 
         const signedTx = await meshWallet.signTx(unsignedTx, true);
+
         const txHash = await meshWallet.submitTx(signedTx);
         await new Promise<void>(function (resolve) {
             blockfrostProvider.onTxConfirmed(txHash, () => {
