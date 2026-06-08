@@ -16,7 +16,7 @@ import { WalletType } from "@/types";
 export const dynamic = "force-dynamic";
 
 export default function SignIn() {
-    const [network, setNetwork] = useState<string>("preview");
+    const [network, setNetwork] = useState<string>("preprod");
 
     useEffect(() => {
         const networkConnection = localStorage.getItem("network");
