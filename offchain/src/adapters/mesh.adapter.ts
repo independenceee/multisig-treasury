@@ -13,11 +13,11 @@ import {
     serializePlutusScript,
     UTxO,
 } from "@meshsdk/core";
-import { blockfrostProvider } from "@/providers/cardano";
-import plutus from "../contract/plutus.json";
+import { blockfrostProvider } from "../providers/cardano/blockfrost";
+import plutus from "../libs/plutus.json";
 import { Plutus } from "../types";
-import { DECIMAL_PLACE, title } from "../constants/common.constant";
-import { APP_NETWORK_ID, APP_WALLET_ADDRESS } from "../constants/enviroments";
+import { DECIMAL_PLACE, title } from "../constants/common";
+import { APP_NETWORK_ID } from "../constants/enviroments";
 
 /**
  * @description

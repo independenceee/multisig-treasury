@@ -31,26 +31,22 @@ validator identity_factory(
 ) {
   mint(redeemer: Mint, policy_id: PolicyId, transaction: Transaction) {
     let Transaction { inputs, outputs, mint, .. } = transaction
-    expect [Pair(asset_name, amount)] =
-      mint
-        |> assets.tokens(policy_id)
-        |> dict.to_pairs()
+    expect [Pair(asset_name, amount)] = mint
+      |> assets.tokens(policy_id)
+      |> dict.to_pairs()
     let treasury_address: Address = from_script(treasury)
     when redeemer is {
-      Init -> True
-      
-      //  {
-        // let output = output_by_addr(outputs, treasury_address)
-        // expect InlineDatum(datum_output_raw) = output.datum
-        // expect datum_output: Datum = datum_output_raw
-        // True
-        // and {
-        //   amount == 1,
-        //   // asset_name == token_name,
-        //   True,
-        //   // list.length(datum_output.signers) == 0,
-        // }
-      // }
+      Init -> {
+        let output = output_by_addr(outputs, treasury_address)
+        expect InlineDatum(datum_output_raw) = output.datum
+        expect datum_output: Datum = datum_output_raw
+
+        and {
+          amount == 1,
+          asset_name == token_name,
+          list.length(datum_output.signers) == 0,
+        }
+      }
       End -> {
         let input = input_by_addr(inputs, treasury_address)
         expect InlineDatum(datum_input_raw) = input.output.datum

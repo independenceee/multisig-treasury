@@ -5,11 +5,6 @@ import { deserializeAddress, mConStr0, mConStr1, mConStr2, stringToHex, mPubKeyA
 export class MeshTxBuilder extends MeshAdapter {
     init = async ({ receiver, owners }: { receiver: string; owners: Array<string> }): Promise<string> => {
         const { utxos, walletAddress, collateral } = await this.getWalletForTx();
-
-        console.log("UTXOs: ", utxos);
-        console.log("Wallet Address: ", walletAddress);
-        console.log("Collateral: ", collateral);
-
         const utxo = await this.getAddressUTXOAsset(this.spendAddress, this.policyId + stringToHex(this.name));
 
         if (utxo) {
@@ -29,7 +24,12 @@ export class MeshTxBuilder extends MeshAdapter {
                     unit: this.policyId + stringToHex(this.name),
                     quantity: "1",
                 },
+                {
+                    unit: "lovelace",
+                    quantity: String(this.allowance),
+                },
             ])
+
             .txOutInlineDatumValue(
                 mConStr0([
                     mPubKeyAddress(deserializeAddress(receiver!).pubKeyHash, deserializeAddress(receiver!).stakeCredentialHash),
