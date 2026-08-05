@@ -20,6 +20,8 @@ export default function Page() {
         queryFn: async () => await getTreasury({ id: params.id as string }),
     });
 
+    console.log(data)
+
     if (error) {
         return (
             <aside className="container mx-auto py-8 px-4 pt-24">

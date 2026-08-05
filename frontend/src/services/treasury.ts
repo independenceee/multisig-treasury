@@ -121,6 +121,8 @@ export async function getTreasury({ id }: { id: string }) {
     }, Number(0));
 
     const datum = meshTxBuilder.convertDatum({ plutusData: utxo.output.plutusData as string });
+
+    console.log("datum", datum);
     return {
         ...datum,
         value,
