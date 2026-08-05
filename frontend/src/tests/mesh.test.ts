@@ -39,8 +39,6 @@ describe("A multisig treasury is a shared fund where spending requires approval 
             name: "Aiken Course 2026",
         });
 
-        await meshTxBuilder.initalize();
-
         const unsignedTx: string = await meshTxBuilder.init({
             receiver: "addr_test1qz45qtdupp8g30lzzr684m8mc278s284cjvawna5ypwkvq7s8xszw9mgmwpxdyakl7dgpfmzywctzlsaghnqrl494wnqhgsy3g",
             owners: [
@@ -69,7 +67,6 @@ describe("A multisig treasury is a shared fund where spending requires approval 
             name: "Aiken Course 2026",
         });
 
-        await meshTxBuilder.initalize();
         const unsignedTx: string = await meshTxBuilder.deposit({
             quantity: "15000000",
         });
@@ -92,7 +89,6 @@ describe("A multisig treasury is a shared fund where spending requires approval 
             allowance: 15 * DECIMAL_PLACE,
             name: "Aiken Course 2026",
         });
-        await meshTxBuilder.initalize();
 
         const unsignedTx: string = await meshTxBuilder.signature();
 
@@ -115,7 +111,6 @@ describe("A multisig treasury is a shared fund where spending requires approval 
             name: "Aiken Course 2026",
         });
 
-        await meshTxBuilder.initalize();
         const unsignedTx: string = await meshTxBuilder.execute({
             amount: "15000000",
         });
@@ -138,8 +133,6 @@ describe("A multisig treasury is a shared fund where spending requires approval 
             allowance: 15 * DECIMAL_PLACE,
             name: "Aiken Course 2026",
         });
-
-        await meshTxBuilder.initalize();
 
         const unsignedTx: string = await meshTxBuilder.end();
 

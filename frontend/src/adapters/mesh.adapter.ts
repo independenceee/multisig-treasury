@@ -100,14 +100,11 @@ export class MeshAdapter {
             version: "V3",
         };
         this.policyId = resolveScriptHash(this.mintScriptCbor, "V3");
-    }
-
-    public initalize = async (): Promise<void> => {
         this.meshTxBuilder = new MeshTxBuilder({
             fetcher: this.fetcher,
             evaluator: blockfrostProvider,
         });
-    };
+    }
 
     /**
      * @description
