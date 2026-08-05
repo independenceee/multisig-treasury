@@ -1,6 +1,7 @@
-/** @type {import('next').NextConfig} */
-const config = {
-  reactStrictMode: true,
+const nextConfig = {
+    experimental: {
+        serverExternalPackages: ["@prisma/client"],
+    },
 };
 
-export default config;
+export default nextConfig;

@@ -6,8 +6,6 @@ export class MeshTxBuilder extends MeshAdapter {
     init = async ({ receiver, owners }: { receiver: string; owners: Array<string> }): Promise<string> => {
         const { utxos, walletAddress, collateral } = await this.getWalletForTx();
 
-        console.log(utxos);
-
         const utxo = await this.getAddressUTXOAsset(this.spendAddress, this.policyId + stringToHex(this.name));
 
         if (utxo) {
