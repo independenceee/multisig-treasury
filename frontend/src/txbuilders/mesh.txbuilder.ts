@@ -17,7 +17,7 @@ export class MeshTxBuilder extends MeshAdapter {
         const unsignedTx = this.meshTxBuilder;
 
         unsignedTx
-            ?.mintPlutusScriptV3()
+            .mintPlutusScriptV3()
             .mint("1", this.policyId, stringToHex(this.name))
             .mintingScript(this.mintScriptCbor)
             .mintRedeemerValue(mConStr0([]))
@@ -37,15 +37,13 @@ export class MeshTxBuilder extends MeshAdapter {
             );
 
         unsignedTx
-            ?.selectUtxosFrom(utxos)
+            .selectUtxosFrom(utxos)
             .changeAddress(walletAddress)
             .requiredSignerHash(deserializeAddress(walletAddress).pubKeyHash)
             .txInCollateral(collateral.input.txHash, collateral.input.outputIndex)
             .setNetwork(APP_NETWORK);
 
-        console.log("unsignedTx", unsignedTx);
-
-        return await unsignedTx?.complete();
+        return await unsignedTx.complete();
     };
 
     deposit = async ({ quantity }: { quantity: string }): Promise<string> => {
